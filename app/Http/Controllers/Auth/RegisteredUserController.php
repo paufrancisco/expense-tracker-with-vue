@@ -31,16 +31,51 @@ class RegisteredUserController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|string|lowercase|email|max:255|unique:' . User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
+            'name'     => $request->name,
+            'email'    => $request->email,
             'password' => Hash::make($request->password),
         ]);
+
+        // Auto-create default income categories for the new user
+        $incomeCategories = [
+            'Salary',
+            'Freelance',
+            'Investment',
+            'Gift',
+        ];
+
+        // Auto-create default expense categories for the new user
+        $expenseCategories = [
+            'Food',
+            'Transport',
+            'Housing',
+            'Utilities',
+            'Healthcare',
+            'Entertainment',
+            'Shopping',
+        ];
+
+        foreach ($incomeCategories as $category) {
+            $user->categories()->create([
+                'name'  => $category,
+                'type'  => 'income',
+                'color' => '#10B981',
+            ]);
+        }
+
+        foreach ($expenseCategories as $category) {
+            $user->categories()->create([
+                'name'  => $category,
+                'type'  => 'expense',
+                'color' => '#EF4444',
+            ]);
+        }
 
         event(new Registered($user));
 
