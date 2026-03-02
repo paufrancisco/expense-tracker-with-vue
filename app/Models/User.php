@@ -42,7 +42,23 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+            'password'          => 'hashed',
         ];
+    }
+
+    /**
+     * A user has many transactions.
+     */
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class);
+    }
+
+    /**
+     * A user has many categories.
+     */
+    public function categories()
+    {
+        return $this->hasMany(Category::class);
     }
 }
