@@ -10,7 +10,7 @@
             @click="exportDropdown = !exportDropdown"
             class="bg-green-600 text-white px-4 py-2 rounded text-sm flex items-center gap-2"
           >
-            ⬇ Export
+          Export
           </button>
 
           <div
