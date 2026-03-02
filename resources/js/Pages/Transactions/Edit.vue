@@ -131,7 +131,7 @@ const form = useForm({
   amount: props.transaction.amount,
   category: props.transaction.category,
   description: props.transaction.description ?? '',
-  transaction_date: props.transaction.transaction_date?.split('T')[0]
+  transaction_date: props.transaction.transaction_date?.split('T')[0] ?? ''
 })
 
 // Only show categories matching the selected type
