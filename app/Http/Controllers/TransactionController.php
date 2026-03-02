@@ -3,12 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Transaction;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class TransactionController extends Controller
 {
+    use AuthorizesRequests;
     /**
      * Display a listing of transactions with optional filters.
      */

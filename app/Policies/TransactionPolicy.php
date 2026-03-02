@@ -8,15 +8,11 @@ use App\Models\User;
 class TransactionPolicy
 {
     /**
-     * Determine if the user can view any transactions.
-     */
-    public function viewAny(User $user): bool
-    {
-        return true;
-    }
-
-    /**
      * Determine if the user can view the transaction.
+     *
+     * @param User $user the authenticated user
+     * @param Transaction $transaction the transaction to view
+     * @return bool
      */
     public function view(User $user, Transaction $transaction): bool
     {
@@ -24,15 +20,11 @@ class TransactionPolicy
     }
 
     /**
-     * Determine if the user can create a transaction.
-     */
-    public function create(User $user): bool
-    {
-        return true;
-    }
-
-    /**
      * Determine if the user can update the transaction.
+     *
+     * @param User $user the authenticated user
+     * @param Transaction $transaction the transaction to update
+     * @return bool
      */
     public function update(User $user, Transaction $transaction): bool
     {
@@ -41,6 +33,10 @@ class TransactionPolicy
 
     /**
      * Determine if the user can delete the transaction.
+     *
+     * @param User $user the authenticated user
+     * @param Transaction $transaction the transaction to delete
+     * @return bool
      */
     public function delete(User $user, Transaction $transaction): bool
     {
