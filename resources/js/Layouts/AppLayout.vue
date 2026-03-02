@@ -18,7 +18,7 @@
     </nav>
 
     <!-- Flash messages -->
-    <div v-if="$page.props.flash.success" class="bg-green-50 border-l-4 border-green-500 p-4 m-4">
+    <div v-if="$page.props.flash?.success" class="bg-green-50 border-l-4 border-green-500 p-4 m-4">
       {{ $page.props.flash.success }}
     </div>
 
