@@ -21,9 +21,11 @@
         "vue": "^3.4.0"
     },
     "dependencies": {
+        "@heroicons/vue": "^2.2.0",
         "@inertiajs/vue3": "^2.3.17",
         "@vitejs/plugin-vue": "^6.0.4",
         "chart.js": "^4.5.1",
+        "chartjs-plugin-datalabels": "^2.2.0",
         "vue": "^3.5.29",
         "vue-chartjs": "^5.3.3"
     }

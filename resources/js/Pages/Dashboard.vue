@@ -1,4 +1,5 @@
 <template>
+  <Head title="Dashboard" />
   <AppLayout>
     <div class="flex justify-between items-center mb-4">
       <h2 class="text-2xl font-bold">Dashboard {{ currentMonth }}</h2>
@@ -112,6 +113,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { Link } from '@inertiajs/vue3'
+import { Head } from '@inertiajs/vue3'
 import { Pie, Bar } from 'vue-chartjs'
 import { Chart, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement } from 'chart.js'
 import ChartDataLabels from 'chartjs-plugin-datalabels'
