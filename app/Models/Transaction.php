@@ -20,10 +20,9 @@ class Transaction extends Model
         'transaction_date',
     ];
 
-    // Auto-convert these to correct PHP types
+    /** @var array */
     protected $casts = [
-        'amount'           => 'decimal:2',
-        'transaction_date' => 'date',
+        'transaction_date' => 'date:Y-m-d',
     ];
 
     // Relationship: each transaction belongs to one user
