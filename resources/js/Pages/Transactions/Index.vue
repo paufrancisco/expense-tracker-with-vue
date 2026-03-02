@@ -13,22 +13,29 @@
     </div>
 
     <!-- Filter Bar -->
-    <div class="bg-white p-4 rounded-xl shadow-sm mb-6 grid grid-cols-2 md:grid-cols-5 gap-3">
+    <div class="bg-white p-4 rounded-xl shadow-sm mb-6 grid grid-cols-6 gap-3">
       <input
         v-model="filterForm.search"
         type="text"
         placeholder="Search..."
         class="border rounded px-3 py-2 text-sm"
       />
+
       <select v-model="filterForm.type" class="border rounded px-3 py-2 text-sm">
         <option value="">All Types</option>
         <option value="income">Income</option>
         <option value="expense">Expense</option>
       </select>
+
       <input v-model="filterForm.date_from" type="date" class="border rounded px-3 py-2 text-sm" />
       <input v-model="filterForm.date_to" type="date" class="border rounded px-3 py-2 text-sm" />
-      <button @click="applyFilters" class="bg-blue-600 text-white rounded px-4 py-2 text-sm">
+
+      <button @click="applyFilters" class="bg-blue-600 text-white rounded px-2 py-2 text-xs font-semibold">
         Filter
+      </button>
+
+      <button @click="resetFilters" class="bg-gray-100 text-gray-600 rounded px-2 py-2 text-xs font-semibold hover:bg-gray-200">
+        Reset
       </button>
     </div>
 
@@ -114,7 +121,12 @@ const deleteTransaction = (id) => {
     router.delete(`/transactions/${id}`)
   }
 }
-</script>
 
-<style scoped>
-</style>
+const resetFilters = () => {
+  filterForm.search = ''
+  filterForm.type = ''
+  filterForm.date_from = ''
+  filterForm.date_to = ''
+  router.get('/transactions', {}, { preserveState: true })
+}
+</script>
