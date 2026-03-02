@@ -3,16 +3,54 @@
     <!-- Top Navigation Bar -->
     <nav class="bg-white shadow-sm border-b">
       <div class="max-w-7xl mx-auto px-4 flex items-center justify-between h-16">
-        <h1 class="text-xl font-bold text-blue-700">💰 Finance Tracker</h1>
+        <h1 class="text-xl font-bold text-blue-700">Finance Tracker</h1>
         <div class="flex items-center gap-4">
-          <Link href="/" class="text-gray-600 hover:text-blue-600">Dashboard</Link>
-          <Link href="/transactions" class="text-gray-600 hover:text-blue-600">Transactions</Link>
-          <Link href="/transactions/create" class="bg-blue-600 text-white px-3 py-1.5 rounded">
-            + Add New
+          <Link
+            href="/dashboard"
+            :class="isActive('/dashboard') ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-600 hover:text-blue-600'"
+            class="pb-1"
+          >
+            Dashboard
           </Link>
-          <!-- User dropdown -->
-          <span class="text-gray-500 text-sm">{{ $page.props.auth.user.name }}</span>
-          <Link href="/logout" method="post" class="text-red-500 text-sm">Logout</Link>
+          <Link
+            href="/transactions"
+            :class="isActive('/transactions') ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-600 hover:text-blue-600'"
+            class="pb-1"
+          >
+            Transactions
+          </Link>
+
+          <!-- User Dropdown -->
+          <div class="relative">
+            <button
+              @click="dropdownOpen = !dropdownOpen"
+              class="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold text-sm focus:outline-none"
+            >
+              {{ $page.props.auth.user.name.charAt(0).toUpperCase() }}
+            </button>
+
+            <!-- Dropdown Menu -->
+            <div
+              v-if="dropdownOpen"
+              class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border z-50"
+            >
+              <div class="px-4 py-3 border-b">
+                <p class="text-sm font-semibold text-gray-800">{{ $page.props.auth.user.name }}</p>
+                <p class="text-xs text-gray-400">{{ $page.props.auth.user.email }}</p>
+              </div>
+              <div class="py-1">
+                <Link
+                  href="/logout"
+                  method="post"
+                  class="block w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50"
+                  @click="dropdownOpen = false"
+                >
+                  Logout
+                </Link>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
     </nav>
@@ -30,8 +68,20 @@
 </template>
 
 <script setup>
-import { Link } from '@inertiajs/vue3'
-</script>
+import { ref, onMounted, onUnmounted } from 'vue'
+import { Link, usePage } from '@inertiajs/vue3'
 
-<style scoped>
-</style>
+const page = usePage()
+const dropdownOpen = ref(false)
+
+const isActive = (path) => page.url === path || page.url.startsWith(path + '/')
+
+const closeDropdown = (e) => {
+  if (!e.target.closest('.relative')) {
+    dropdownOpen.value = false
+  }
+}
+
+onMounted(() => document.addEventListener('click', closeDropdown))
+onUnmounted(() => document.removeEventListener('click', closeDropdown))
+</script>

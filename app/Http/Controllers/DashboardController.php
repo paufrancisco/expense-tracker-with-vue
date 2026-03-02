@@ -10,31 +10,35 @@ class DashboardController extends Controller
 {
     /**
      * Display the dashboard with financial summary and charts.
+     *
+     * @param Request $request the incoming request
+     * @return \Inertia\Response
      */
-    public function index(Request $request)
+    public function index(Request $request): \Inertia\Response
     {
-        $user         = $request->user();
+        $user = $request->user();
         $currentMonth = Carbon::now()->month;
-        $currentYear  = Carbon::now()->year;
+        $currentYear = Carbon::now()->year;
 
-        // Get this month's transactions
         $transactions = $user->transactions()
             ->whereMonth('transaction_date', $currentMonth)
             ->whereYear('transaction_date', $currentYear)
             ->get();
 
-        // Calculate totals
-        $totalIncome  = $transactions->where('type', 'income')->sum('amount');
+        $totalIncome = $transactions->where('type', 'income')->sum('amount');
         $totalExpense = $transactions->where('type', 'expense')->sum('amount');
-        $balance      = $totalIncome - $totalExpense;
+        $balance = $totalIncome - $totalExpense;
 
-        // Group expenses by category for pie chart
         $expenseByCategory = $transactions
             ->where('type', 'expense')
             ->groupBy('category')
             ->map(fn ($items) => $items->sum('amount'));
 
-        // Last 6 months summary for bar chart
+        $incomeByCategory = $transactions
+            ->where('type', 'income')
+            ->groupBy('category')
+            ->map(fn ($items) => $items->sum('amount'));
+
         $monthlyData = [];
 
         for ($i = 5; $i >= 0; $i--) {
@@ -46,24 +50,32 @@ class DashboardController extends Controller
                 ->get();
 
             $monthlyData[] = [
-                'month'   => $date->format('M Y'),
-                'income'  => $monthTransactions->where('type', 'income')->sum('amount'),
+                'month' => $date->format('M Y'),
+                'income' => $monthTransactions->where('type', 'income')->sum('amount'),
                 'expense' => $monthTransactions->where('type', 'expense')->sum('amount'),
             ];
         }
 
-        // Get the 5 most recent transactions
         $recentTransactions = $user->transactions()
             ->orderBy('transaction_date', 'desc')
             ->limit(5)
-            ->get();
+            ->get()
+            ->map(fn ($transaction) => [
+                'id' => $transaction->id,
+                'title' => $transaction->title,
+                'category' => $transaction->category,
+                'type' => $transaction->type,
+                'amount' => $transaction->amount,
+                'transaction_date' => $transaction->transaction_date->format('Y-m-d'),
+            ]);
 
         return Inertia::render('Dashboard', [
-            'totalIncome'        => $totalIncome,
-            'totalExpense'       => $totalExpense,
-            'balance'            => $balance,
-            'expenseByCategory'  => $expenseByCategory,
-            'monthlyData'        => $monthlyData,
+            'totalIncome' => $totalIncome,
+            'totalExpense' => $totalExpense,
+            'balance' => $balance,
+            'expenseByCategory' => $expenseByCategory,
+            'incomeByCategory' => $incomeByCategory,
+            'monthlyData' => $monthlyData,
             'recentTransactions' => $recentTransactions,
         ]);
     }
