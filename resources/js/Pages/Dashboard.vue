@@ -2,7 +2,7 @@
   <Head title="Dashboard" />
   <AppLayout>
     <div class="flex justify-between items-center mb-4">
-      <h2 class="text-2xl font-bold">Dashboard {{ currentMonth }}</h2>
+      <h2 class="text-2xl font-bold">Dashboard — {{ currentMonth }}</h2>
       <Link href="/transactions/create" class="bg-blue-600 text-white px-3 py-1.5 rounded">
         + Add New
       </Link>
@@ -55,6 +55,12 @@
             </tr>
           </thead>
           <tbody>
+            <tr v-if="recentTransactions.length === 0">
+              <td colspan="4" class="py-6 text-center text-gray-400 text-sm">
+                <p class="text-2xl mb-1">📭</p>
+                No recent transactions
+              </td>
+            </tr>
             <tr v-for="transaction in recentTransactions" :key="transaction.id" class="border-b">
               <td class="py-1.5">{{ transaction.transaction_date }}</td>
               <td class="py-1.5">{{ transaction.title }}</td>
@@ -93,16 +99,26 @@
             Income by Category
           </button>
         </div>
-        <div style="height: 220px;">
-          <Pie :data="activePieData" :options="PIE_OPTIONS" />
+        <div style="height: 220px;" class="flex items-center justify-center">
+          <Pie v-if="activePieHasData" :data="activePieData" :options="PIE_OPTIONS" />
+          <div v-else class="text-center text-gray-400">
+            <p class="text-3xl mb-2">📭</p>
+            <p class="text-sm font-medium">No data available</p>
+            <p class="text-xs mt-1">Add some {{ pieTab }} transactions this month</p>
+          </div>
         </div>
       </div>
 
       <!-- Right: Bar Chart -->
       <div class="bg-white p-4 rounded-xl shadow-sm">
         <h3 class="font-semibold mb-2">Monthly Overview (Last 6 Months)</h3>
-        <div style="height: 220px;">
-          <Bar :data="barData" :options="BAR_OPTIONS" />
+        <div style="height: 220px;" class="flex items-center justify-center">
+          <Bar v-if="barHasData" :data="barData" :options="BAR_OPTIONS" />
+          <div v-else class="text-center text-gray-400">
+            <p class="text-3xl mb-2">📭</p>
+            <p class="text-sm font-medium">No data available</p>
+            <p class="text-xs mt-1">Add transactions to see your monthly overview</p>
+          </div>
         </div>
       </div>
 
@@ -111,9 +127,8 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { Link } from '@inertiajs/vue3'
-import { Head } from '@inertiajs/vue3'
+import { ref, computed, onMounted } from 'vue'
+import { Link, Head, router } from '@inertiajs/vue3'
 import { Pie, Bar } from 'vue-chartjs'
 import { Chart, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement } from 'chart.js'
 import ChartDataLabels from 'chartjs-plugin-datalabels'
@@ -151,6 +166,20 @@ const props = defineProps({
     type: Array,
     default: () => []
   }
+})
+
+onMounted(() => {
+  router.reload({
+    only: [
+      'totalIncome',
+      'totalExpense',
+      'balance',
+      'expenseByCategory',
+      'incomeByCategory',
+      'monthlyData',
+      'recentTransactions'
+    ]
+  })
 })
 
 const pieTab = ref('expense')
@@ -213,6 +242,15 @@ const incomePieData = computed(() => ({
     backgroundColor: CHART_COLORS
   }]
 }))
+
+const activePieHasData = computed(() => {
+  const data = pieTab.value === 'expense' ? props.expenseByCategory : props.incomeByCategory
+  return Object.keys(data).length > 0
+})
+
+const barHasData = computed(() =>
+  props.monthlyData.some(month => month.income > 0 || month.expense > 0)
+)
 
 const activePieData = computed(() =>
   pieTab.value === 'expense' ? expensePieData.value : incomePieData.value
