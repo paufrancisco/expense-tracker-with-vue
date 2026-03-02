@@ -1,11 +1,48 @@
 <template>
   <AppLayout>
+    <!-- Header -->
     <div class="flex justify-between items-center mb-6">
       <h2 class="text-2xl font-bold">All Transactions</h2>
-      <div class="flex gap-2">
-        <a :href="route('transactions.export')" class="bg-green-600 text-white px-4 py-2 rounded text-sm">
-          ⬇ Export CSV
-        </a>
+      <div class="flex gap-2"> 
+        <!-- Export Dropdown -->
+        <div class="relative">
+          <button
+            @click="exportDropdown = !exportDropdown"
+            class="bg-green-600 text-white px-4 py-2 rounded text-sm flex items-center gap-2"
+          >
+            ⬇ Export
+          </button>
+
+          <div
+            v-if="exportDropdown"
+            class="absolute right-0 mt-2 w-40 bg-white rounded-xl shadow-lg border z-50"
+          >
+            <a
+              :href="route('transactions.export', { format: 'csv' })"
+              class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+              @click="exportDropdown = false"
+            >
+              📄 Export CSV
+            </a>
+
+            <a
+              :href="route('transactions.export', { format: 'excel' })"
+              class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+              @click="exportDropdown = false"
+            >
+              📊 Export Excel
+            </a>
+
+            <a
+              :href="route('transactions.export', { format: 'pdf' })"
+              class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+              @click="exportDropdown = false"
+            >
+              📑 Export PDF
+            </a>
+          </div>
+        </div>
+
         <Link href="/transactions/create" class="bg-blue-600 text-white px-4 py-2 rounded text-sm">
           + Add Transaction
         </Link>
@@ -90,7 +127,7 @@
 </template>
 
 <script setup>
-import { reactive } from 'vue'
+import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import { Link, router } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
 
@@ -105,12 +142,20 @@ const props = defineProps({
   }
 })
 
+const exportDropdown = ref(false)
+
 const filterForm = reactive({
   search: props.filters.search || '',
   type: props.filters.type || '',
   date_from: props.filters.date_from || '',
   date_to: props.filters.date_to || ''
 })
+
+const closeExportDropdown = (e) => {
+  if (!e.target.closest('.relative')) {
+    exportDropdown.value = false
+  }
+}
 
 const applyFilters = () => {
   router.get('/transactions', filterForm, { preserveState: true })
@@ -129,4 +174,7 @@ const resetFilters = () => {
   filterForm.date_to = ''
   router.get('/transactions', {}, { preserveState: true })
 }
+
+onMounted(() => document.addEventListener('click', closeExportDropdown))
+onUnmounted(() => document.removeEventListener('click', closeExportDropdown))
 </script>

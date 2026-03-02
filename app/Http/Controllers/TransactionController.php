@@ -6,30 +6,30 @@ use App\Models\Transaction;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class TransactionController extends Controller
 {
     use AuthorizesRequests;
+
     /**
      * Display a listing of transactions with optional filters.
+     *
+     * @param Request $request the incoming request
+     * @return \Inertia\Response
      */
-    public function index(Request $request)
+    public function index(Request $request): \Inertia\Response
     {
         $query = $request->user()->transactions()
             ->orderBy('transaction_date', 'desc');
 
-        // Filter by type (income/expense)
         if ($request->type) {
             $query->where('type', $request->type);
         }
 
-        // Filter by category
         if ($request->category) {
             $query->where('category', $request->category);
         }
 
-        // Filter by date range
         if ($request->date_from) {
             $query->whereDate('transaction_date', '>=', $request->date_from);
         }
@@ -38,7 +38,6 @@ class TransactionController extends Controller
             $query->whereDate('transaction_date', '<=', $request->date_to);
         }
 
-        // Search by title
         if ($request->search) {
             $query->where('title', 'like', '%' . $request->search . '%');
         }
@@ -47,7 +46,7 @@ class TransactionController extends Controller
 
         return Inertia::render('Transactions/Index', [
             'transactions' => $transactions,
-            'filters'      => $request->only([
+            'filters' => $request->only([
                 'type',
                 'category',
                 'date_from',
@@ -59,8 +58,11 @@ class TransactionController extends Controller
 
     /**
      * Show the form for creating a new transaction.
+     *
+     * @param Request $request the incoming request
+     * @return \Inertia\Response
      */
-    public function create(Request $request)
+    public function create(Request $request): \Inertia\Response
     {
         $categories = $request->user()->categories()->get();
 
@@ -71,15 +73,18 @@ class TransactionController extends Controller
 
     /**
      * Store a newly created transaction in the database.
+     *
+     * @param Request $request the incoming request
+     * @return \Illuminate\Http\RedirectResponse
      */
-    public function store(Request $request)
+    public function store(Request $request): \Illuminate\Http\RedirectResponse
     {
         $validated = $request->validate([
-            'type'             => 'required|in:income,expense',
-            'title'            => 'required|string|max:255',
-            'amount'           => 'required|numeric|min:0.01',
-            'category'         => 'required|string',
-            'description'      => 'nullable|string',
+            'type' => 'required|in:income,expense',
+            'title' => 'required|string|max:255',
+            'amount' => 'required|numeric|min:0.01',
+            'category' => 'required|string',
+            'description' => 'nullable|string',
             'transaction_date' => 'required|date',
         ]);
 
@@ -91,30 +96,38 @@ class TransactionController extends Controller
 
     /**
      * Show the form for editing an existing transaction.
+     *
+     * @param Request $request the incoming request
+     * @param Transaction $transaction the transaction to edit
+     * @return \Inertia\Response
      */
-    public function edit(Request $request, Transaction $transaction)
+    public function edit(Request $request, Transaction $transaction): \Inertia\Response
     {
         $this->authorize('update', $transaction);
 
         return Inertia::render('Transactions/Edit', [
             'transaction' => $transaction,
-            'categories'  => $request->user()->categories()->get(),
+            'categories' => $request->user()->categories()->get(),
         ]);
     }
 
     /**
      * Update the specified transaction in the database.
+     *
+     * @param Request $request the incoming request
+     * @param Transaction $transaction the transaction to update
+     * @return \Illuminate\Http\RedirectResponse
      */
-    public function update(Request $request, Transaction $transaction)
+    public function update(Request $request, Transaction $transaction): \Illuminate\Http\RedirectResponse
     {
         $this->authorize('update', $transaction);
 
         $validated = $request->validate([
-            'type'             => 'required|in:income,expense',
-            'title'            => 'required|string|max:255',
-            'amount'           => 'required|numeric|min:0.01',
-            'category'         => 'required|string',
-            'description'      => 'nullable|string',
+            'type' => 'required|in:income,expense',
+            'title' => 'required|string|max:255',
+            'amount' => 'required|numeric|min:0.01',
+            'category' => 'required|string',
+            'description' => 'nullable|string',
             'transaction_date' => 'required|date',
         ]);
 
@@ -126,8 +139,11 @@ class TransactionController extends Controller
 
     /**
      * Remove the specified transaction from the database.
+     *
+     * @param Transaction $transaction the transaction to delete
+     * @return \Illuminate\Http\RedirectResponse
      */
-    public function destroy(Transaction $transaction)
+    public function destroy(Transaction $transaction): \Illuminate\Http\RedirectResponse
     {
         $this->authorize('delete', $transaction);
 
@@ -138,33 +154,70 @@ class TransactionController extends Controller
     }
 
     /**
-     * Export all transactions as a CSV file.
+     * Export transactions in the specified format.
+     *
+     * @param Request $request the incoming request
+     * @return mixed
      */
-    public function export(Request $request): StreamedResponse
+    public function export(Request $request): mixed
     {
+        $format = $request->input('format', 'csv');
         $transactions = $request->user()->transactions()
             ->orderBy('transaction_date', 'desc')
             ->get();
 
+        if ($format === 'pdf') {
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('exports.transactions-pdf', [
+                'transactions' => $transactions,
+            ]);
+
+            return $pdf->download('transactions.pdf');
+        }
+
+        if ($format === 'excel') {
+            $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+            $sheet = $spreadsheet->getActiveSheet();
+
+            $sheet->fromArray(
+                ['Date', 'Type', 'Title', 'Category', 'Amount', 'Description'],
+                null,
+                'A1'
+            );
+
+            $row = 2;
+
+            foreach ($transactions as $transaction) {
+                $sheet->fromArray([
+                    $transaction->transaction_date->format('Y-m-d'),
+                    $transaction->type,
+                    $transaction->title,
+                    $transaction->category,
+                    $transaction->amount,
+                    $transaction->description,
+                ], null, 'A' . $row);
+
+                $row++;
+            }
+
+            $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+
+            return response()->streamDownload(function () use ($writer) {
+                $writer->save('php://output');
+            }, 'transactions.xlsx', [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            ]);
+        }
+
         $headers = [
-            'Content-Type'        => 'text/csv',
+            'Content-Type' => 'text/csv',
             'Content-Disposition' => 'attachment; filename=transactions.csv',
         ];
 
         return response()->stream(function () use ($transactions) {
             $handle = fopen('php://output', 'w');
 
-            // CSV header row
-            fputcsv($handle, [
-                'Date',
-                'Type',
-                'Title',
-                'Category',
-                'Amount',
-                'Description',
-            ]);
+            fputcsv($handle, ['Date', 'Type', 'Title', 'Category', 'Amount', 'Description']);
 
-            // CSV data rows
             foreach ($transactions as $transaction) {
                 fputcsv($handle, [
                     $transaction->transaction_date->format('Y-m-d'),
