@@ -81,7 +81,7 @@
       <table class="w-full">
         <thead class="bg-gray-50">
           <tr>
-            <th class="px-4 py-3 text-left text-sm">Date</th>
+            <th class="px-4 py-3 text-left text-sm">Date (YYYY-MM-DD)</th>
             <th class="px-4 py-3 text-left text-sm">Title</th>
             <th class="px-4 py-3 text-left text-sm">Type</th>
             <th class="px-4 py-3 text-left text-sm">Category</th>
