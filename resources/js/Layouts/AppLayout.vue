@@ -4,7 +4,7 @@
     <nav class="bg-[#25343F] shadow-sm border-b border-gray-700">
       <div class="max-w-7xl mx-auto px-4 flex items-center justify-between h-12">
         <Link href="/dashboard">
-          <img :src="logo" alt="Track Wise" class="h-10 w-auto object-contain" />
+          <img :src="logo" alt="Track Wise" class="h-5 w-auto object-contain" />
         </Link>
 
         <div class="flex items-center gap-6">
