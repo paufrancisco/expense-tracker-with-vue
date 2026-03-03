@@ -18,7 +18,7 @@
             v-if="exportDropdown"
             class="absolute right-0 mt-2 w-40 bg-white rounded-xl shadow-lg border z-50"
           >
-            <a
+            
               :href="route('transactions.export', { format: 'csv' })"
               class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
               @click="exportDropdown = false"
@@ -26,7 +26,7 @@
               📄 Export CSV
             </a>
 
-            <a
+            
               :href="route('transactions.export', { format: 'excel' })"
               class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
               @click="exportDropdown = false"
@@ -34,7 +34,7 @@
               📊 Export Excel
             </a>
 
-            <a
+            
               :href="route('transactions.export', { format: 'pdf' })"
               class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
               @click="exportDropdown = false"
@@ -51,19 +51,20 @@
     </div>
 
     <!-- Filter Bar -->
-    <div class="bg-white p-4 rounded-xl shadow-sm mb-6 grid grid-cols-7 gap-3">
+    <div class="bg-white p-4 rounded-xl shadow-sm mb-6 grid grid-cols-6 gap-3">
       <input
         v-model="filterForm.search"
         type="text"
         placeholder="Search..."
         class="border rounded px-3 py-2 text-sm"
+        @input="applyFilters"
       />
 
       <!-- Type -->
       <select
         v-model="filterForm.type"
         class="border rounded px-3 py-2 text-sm"
-        @change="filterForm.category = ''"
+        @change="onTypeChange"
       >
         <option value="">All Types</option>
         <option value="income">Income</option>
@@ -71,7 +72,11 @@
       </select>
 
       <!-- Category — changes based on selected type -->
-      <select v-model="filterForm.category" class="border rounded px-3 py-2 text-sm">
+      <select
+        v-model="filterForm.category"
+        class="border rounded px-3 py-2 text-sm"
+        @change="applyFilters"
+      >
         <option value="">All Categories</option>
 
         <template v-if="filterForm.type === 'income'">
@@ -100,15 +105,19 @@
         </template>
       </select>
 
-      <input v-model="filterForm.date_from" type="date" class="border rounded px-3 py-2 text-sm" />
-      <input v-model="filterForm.date_to" type="date" class="border rounded px-3 py-2 text-sm" />
+      <input
+        v-model="filterForm.date_from"
+        type="date"
+        class="border rounded px-3 py-2 text-sm"
+        @change="applyFilters"
+      />
 
-      <button
-        @click="applyFilters"
-        class="bg-blue-600 text-white rounded px-2 py-2 text-xs font-semibold"
-      >
-        Filter
-      </button>
+      <input
+        v-model="filterForm.date_to"
+        type="date"
+        class="border rounded px-3 py-2 text-sm"
+        @change="applyFilters"
+      />
 
       <button
         @click="resetFilters"
@@ -226,7 +235,12 @@ const closeExportDropdown = (e) => {
 }
 
 const applyFilters = () => {
-  router.get('/transactions', filterForm, { preserveState: true })
+  router.get('/transactions', filterForm, { preserveState: true, preserveScroll: true })
+}
+
+const onTypeChange = () => {
+  filterForm.category = ''
+  applyFilters()
 }
 
 const deleteTransaction = (id) => {
@@ -241,7 +255,7 @@ const resetFilters = () => {
   filterForm.category = ''
   filterForm.date_from = ''
   filterForm.date_to = ''
-  router.get('/transactions', {}, { preserveState: true })
+  router.get('/transactions', {}, { preserveState: true, preserveScroll: true })
 }
 
 onMounted(() => document.addEventListener('click', closeExportDropdown))
