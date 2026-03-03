@@ -1,21 +1,23 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
+  <div class="min-h-screen bg-[#BFC9D1]">
     <!-- Top Navigation Bar -->
-    <nav class="bg-white shadow-sm border-b">
+    <nav class="bg-[#25343F] shadow-sm border-b border-gray-700">
       <div class="max-w-7xl mx-auto px-4 flex items-center justify-between h-16">
-        <h1 class="text-xl font-bold text-blue-700">Finance Tracker</h1>
-        <div class="flex items-center gap-4">
+        <h1 class="text-xl font-bold text-white">Track Wise</h1>
+        <div class="flex items-center gap-6">
           <Link
             href="/dashboard"
-            :class="isActive('/dashboard') ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-600 hover:text-blue-600'"
-            class="pb-1"
+            :class="isActive('/dashboard')
+              ? 'text-white border-b-2 border-white pb-1'
+              : 'text-gray-400 hover:text-white pb-1'"
           >
             Dashboard
           </Link>
           <Link
             href="/transactions"
-            :class="isActive('/transactions') ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-600 hover:text-blue-600'"
-            class="pb-1"
+            :class="isActive('/transactions')
+              ? 'text-white border-b-2 border-white pb-1'
+              : 'text-gray-400 hover:text-white pb-1'"
           >
             Transactions
           </Link>
