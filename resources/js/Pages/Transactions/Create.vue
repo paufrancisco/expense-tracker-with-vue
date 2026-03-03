@@ -7,14 +7,15 @@
         <!-- Type Selector -->
         <div class="grid grid-cols-2 gap-3 mb-6">
           <button
-            @click="form.type = 'income'"
+            @click="selectType('income')"
             :class="form.type === 'income' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700'"
             class="py-3 rounded-lg font-semibold"
           >
             ↑ Income
           </button>
+
           <button
-            @click="form.type = 'expense'"
+            @click="selectType('expense')"
             :class="form.type === 'expense' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-700'"
             class="py-3 rounded-lg font-semibold"
           >
@@ -52,6 +53,7 @@
                 {{ form.errors.amount }}
               </p>
             </div>
+
             <div>
               <label class="block text-sm font-medium mb-1">Date *</label>
               <input
@@ -69,8 +71,8 @@
             <label class="block text-sm font-medium mb-1">Category *</label>
             <select v-model="form.category" class="w-full border rounded-lg px-3 py-2">
               <option value="">Select Category</option>
-              <option v-for="category in filteredCategories" :key="category.id" :value="category.name">
-                {{ category.name }}
+              <option v-for="cat in currentCategories" :key="cat.id" :value="cat.name">
+                {{ cat.name }}
               </option>
             </select>
             <p v-if="form.errors.category" class="text-red-500 text-xs mt-1">
@@ -107,7 +109,11 @@ import { useForm } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
 
 const props = defineProps({
-  categories: {
+  income: {
+    type: Array,
+    default: () => []
+  },
+  expense: {
     type: Array,
     default: () => []
   }
@@ -122,15 +128,16 @@ const form = useForm({
   transaction_date: new Date().toISOString().split('T')[0]
 })
 
-// Only show categories matching the selected type
-const filteredCategories = computed(() =>
-  props.categories.filter(category => category.type === form.type)
+const currentCategories = computed(() =>
+  form.type === 'income' ? props.income : props.expense
 )
+
+const selectType = (type) => {
+  form.type = type
+  form.category = ''
+}
 
 const submit = () => {
   form.post('/transactions')
 }
 </script>
-
-<style scoped>
-</style>

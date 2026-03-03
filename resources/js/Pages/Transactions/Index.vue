@@ -3,14 +3,15 @@
     <!-- Header -->
     <div class="flex justify-between items-center mb-6">
       <h2 class="text-2xl font-bold">All Transactions</h2>
-      <div class="flex gap-2"> 
+
+      <div class="flex gap-2">
         <!-- Export Dropdown -->
         <div class="relative">
           <button
             @click="exportDropdown = !exportDropdown"
             class="bg-green-600 text-white px-4 py-2 rounded text-sm flex items-center gap-2"
           >
-          Export
+            Export
           </button>
 
           <div
@@ -50,7 +51,7 @@
     </div>
 
     <!-- Filter Bar -->
-    <div class="bg-white p-4 rounded-xl shadow-sm mb-6 grid grid-cols-6 gap-3">
+    <div class="bg-white p-4 rounded-xl shadow-sm mb-6 grid grid-cols-7 gap-3">
       <input
         v-model="filterForm.search"
         type="text"
@@ -58,20 +59,61 @@
         class="border rounded px-3 py-2 text-sm"
       />
 
-      <select v-model="filterForm.type" class="border rounded px-3 py-2 text-sm">
+      <!-- Type -->
+      <select
+        v-model="filterForm.type"
+        class="border rounded px-3 py-2 text-sm"
+        @change="filterForm.category = ''"
+      >
         <option value="">All Types</option>
         <option value="income">Income</option>
         <option value="expense">Expense</option>
       </select>
 
+      <!-- Category — changes based on selected type -->
+      <select v-model="filterForm.category" class="border rounded px-3 py-2 text-sm">
+        <option value="">All Categories</option>
+
+        <template v-if="filterForm.type === 'income'">
+          <option v-for="cat in income" :key="cat.id" :value="cat.name">
+            {{ cat.name }}
+          </option>
+        </template>
+
+        <template v-else-if="filterForm.type === 'expense'">
+          <option v-for="cat in expense" :key="cat.id" :value="cat.name">
+            {{ cat.name }}
+          </option>
+        </template>
+
+        <template v-else>
+          <optgroup label="Income">
+            <option v-for="cat in income" :key="'i-' + cat.id" :value="cat.name">
+              {{ cat.name }}
+            </option>
+          </optgroup>
+          <optgroup label="Expense">
+            <option v-for="cat in expense" :key="'e-' + cat.id" :value="cat.name">
+              {{ cat.name }}
+            </option>
+          </optgroup>
+        </template>
+      </select>
+
       <input v-model="filterForm.date_from" type="date" class="border rounded px-3 py-2 text-sm" />
       <input v-model="filterForm.date_to" type="date" class="border rounded px-3 py-2 text-sm" />
 
-      <button @click="applyFilters" class="bg-blue-600 text-white rounded px-2 py-2 text-xs font-semibold">
+      <button
+        @click="applyFilters"
+        class="bg-blue-600 text-white rounded px-2 py-2 text-xs font-semibold"
+      >
         Filter
       </button>
 
-      <button @click="resetFilters" class="bg-gray-100 text-gray-600 rounded px-2 py-2 text-xs font-semibold hover:bg-gray-200">
+      <button
+        @click="resetFilters"
+        class="bg-gray-100 text-gray-600 rounded px-2 py-2 text-xs font-semibold hover:bg-gray-200"
+      >
         Reset
       </button>
     </div>
@@ -89,13 +131,20 @@
             <th class="px-4 py-3 text-center text-sm">Actions</th>
           </tr>
         </thead>
+
         <tbody>
-          <tr v-for="transaction in transactions.data" :key="transaction.id" class="border-t hover:bg-gray-50">
+          <tr
+            v-for="transaction in transactions.data"
+            :key="transaction.id"
+            class="border-t hover:bg-gray-50"
+          >
             <td class="px-4 py-3 text-sm">{{ transaction.transaction_date }}</td>
+
             <td class="px-4 py-3">
               <div class="font-medium">{{ transaction.title }}</div>
               <div class="text-xs text-gray-400">{{ transaction.description }}</div>
             </td>
+
             <td class="px-4 py-3">
               <span
                 :class="transaction.type === 'income' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
@@ -104,18 +153,28 @@
                 {{ transaction.type }}
               </span>
             </td>
+
             <td class="px-4 py-3 text-sm">{{ transaction.category }}</td>
+
             <td
               class="px-4 py-3 text-right font-semibold"
               :class="transaction.type === 'income' ? 'text-green-600' : 'text-red-600'"
             >
               {{ transaction.type === 'income' ? '+' : '-' }}₱{{ Number(transaction.amount).toLocaleString() }}
             </td>
+
             <td class="px-4 py-3 text-center">
-              <Link :href="`/transactions/${transaction.id}/edit`" class="text-blue-600 hover:underline text-sm mr-3">
+              <Link
+                :href="`/transactions/${transaction.id}/edit`"
+                class="text-blue-600 hover:underline text-sm mr-3"
+              >
                 Edit
               </Link>
-              <button @click="deleteTransaction(transaction.id)" class="text-red-500 hover:underline text-sm">
+
+              <button
+                @click="deleteTransaction(transaction.id)"
+                class="text-red-500 hover:underline text-sm"
+              >
                 Delete
               </button>
             </td>
@@ -139,6 +198,14 @@ const props = defineProps({
   filters: {
     type: Object,
     default: () => ({})
+  },
+  income: {
+    type: Array,
+    default: () => []
+  },
+  expense: {
+    type: Array,
+    default: () => []
   }
 })
 
@@ -147,6 +214,7 @@ const exportDropdown = ref(false)
 const filterForm = reactive({
   search: props.filters.search || '',
   type: props.filters.type || '',
+  category: props.filters.category || '',
   date_from: props.filters.date_from || '',
   date_to: props.filters.date_to || ''
 })
@@ -170,6 +238,7 @@ const deleteTransaction = (id) => {
 const resetFilters = () => {
   filterForm.search = ''
   filterForm.type = ''
+  filterForm.category = ''
   filterForm.date_from = ''
   filterForm.date_to = ''
   router.get('/transactions', {}, { preserveState: true })
