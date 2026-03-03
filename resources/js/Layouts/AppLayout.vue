@@ -2,17 +2,21 @@
   <div class="min-h-screen bg-[#BFC9D1]">
     <!-- Top Navigation Bar -->
     <nav class="bg-[#25343F] shadow-sm border-b border-gray-700">
-      <div class="max-w-7xl mx-auto px-4 flex items-center justify-between h-16">
-        <h1 class="text-xl font-bold text-white">Track Wise</h1>
+      <div class="max-w-7xl mx-auto px-4 flex items-center justify-between h-12">
+        <Link href="/dashboard">
+          <img :src="logo" alt="Track Wise" class="h-10 w-auto object-contain" />
+        </Link>
+
         <div class="flex items-center gap-6">
           <Link
             href="/dashboard"
-            :class="isActive('/dashboard')
+            :class="page.url === '/dashboard'
               ? 'text-white border-b-2 border-white pb-1'
               : 'text-gray-400 hover:text-white pb-1'"
           >
             Dashboard
           </Link>
+
           <Link
             href="/transactions"
             :class="isActive('/transactions')
@@ -28,7 +32,7 @@
               @click="dropdownOpen = !dropdownOpen"
               class="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold text-sm focus:outline-none"
             >
-              {{ $page.props.auth.user.name.charAt(0).toUpperCase() }}
+              {{ authUser.name.charAt(0).toUpperCase() }}
             </button>
 
             <!-- Dropdown Menu -->
@@ -37,9 +41,10 @@
               class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border z-50"
             >
               <div class="px-4 py-3 border-b">
-                <p class="text-sm font-semibold text-gray-800">{{ $page.props.auth.user.name }}</p>
-                <p class="text-xs text-gray-400">{{ $page.props.auth.user.email }}</p>
+                <p class="text-sm font-semibold text-gray-800">{{ authUser.name }}</p>
+                <p class="text-xs text-gray-400">{{ authUser.email }}</p>
               </div>
+
               <div class="py-1">
                 <Link
                   href="/logout"
@@ -52,17 +57,16 @@
               </div>
             </div>
           </div>
-
         </div>
       </div>
     </nav>
 
-    <!-- Flash messages -->
+    <!-- Flash Messages -->
     <div v-if="$page.props.flash?.success" class="bg-green-50 border-l-4 border-green-500 p-4 m-4">
       {{ $page.props.flash.success }}
     </div>
 
-    <!-- Page content -->
+    <!-- Page Content -->
     <main class="max-w-7xl mx-auto px-4 py-8">
       <slot />
     </main>
@@ -70,11 +74,14 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { Link, usePage } from '@inertiajs/vue3'
+import logo from '../../../resources/images/logo.png'
 
 const page = usePage()
 const dropdownOpen = ref(false)
+
+const authUser = computed(() => page.props.auth.user)
 
 const isActive = (path) => page.url === path || page.url.startsWith(path + '/')
 
