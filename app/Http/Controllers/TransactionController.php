@@ -19,7 +19,7 @@ class TransactionController extends Controller
     /**
      * Display a listing of transactions with optional filters.
      *
-     * @param Request $request the incoming request
+     * @param  Request $request the incoming request
      * @return Response
      */
     public function index(Request $request): Response
@@ -59,7 +59,7 @@ class TransactionController extends Controller
     /**
      * Retrieve the authenticated user's categories grouped by type.
      *
-     * @param Request $request the incoming request
+     * @param  Request $request the incoming request
      * @return array
      */
     private function getCategoriesGroupedByType(Request $request): array
@@ -79,7 +79,7 @@ class TransactionController extends Controller
     /**
      * Show the form for creating a new transaction.
      *
-     * @param Request $request the incoming request
+     * @param  Request $request the incoming request
      * @return Response
      */
     public function create(Request $request): Response
@@ -90,7 +90,7 @@ class TransactionController extends Controller
     /**
      * Store a newly created transaction in the database.
      *
-     * @param Request $request the incoming request
+     * @param  Request $request the incoming request
      * @return RedirectResponse
      */
     public function store(Request $request): RedirectResponse
@@ -113,8 +113,8 @@ class TransactionController extends Controller
     /**
      * Show the form for editing an existing transaction.
      *
-     * @param Request $request the incoming request
-     * @param Transaction $transaction the transaction to edit
+     * @param  Request $request the incoming request
+     * @param  Transaction $transaction the transaction to edit
      * @return Response
      */
     public function edit(Request $request, Transaction $transaction): Response
@@ -123,15 +123,15 @@ class TransactionController extends Controller
 
         return Inertia::render('Transactions/Edit', [
             'transaction' => $transaction,
-            'categories'  => $request->user()->categories()->orderBy('name')->get(),  
+            'categories'  => $request->user()->categories()->orderBy('name')->get(),
         ]);
     }
 
     /**
      * Update the specified transaction in the database.
      *
-     * @param Request $request the incoming request
-     * @param Transaction $transaction the transaction to update
+     * @param  Request $request the incoming request
+     * @param  Transaction $transaction the transaction to update
      * @return RedirectResponse
      */
     public function update(Request $request, Transaction $transaction): RedirectResponse
@@ -156,7 +156,7 @@ class TransactionController extends Controller
     /**
      * Remove the specified transaction from the database.
      *
-     * @param Transaction $transaction the transaction to delete
+     * @param  Transaction $transaction the transaction to delete
      * @return RedirectResponse
      */
     public function destroy(Transaction $transaction): RedirectResponse
@@ -172,7 +172,7 @@ class TransactionController extends Controller
     /**
      * Export transactions in the specified format.
      *
-     * @param Request $request the incoming request
+     * @param  Request $request the incoming request
      * @return mixed
      */
     public function export(Request $request): mixed
@@ -197,7 +197,7 @@ class TransactionController extends Controller
     /**
      * Export transactions as a PDF file.
      *
-     * @param \Illuminate\Database\Eloquent\Collection $transactions the transactions to export
+     * @param  \Illuminate\Database\Eloquent\Collection $transactions the transactions to export
      * @return mixed
      */
     private function exportAsPdf(\Illuminate\Database\Eloquent\Collection $transactions): mixed
@@ -212,7 +212,7 @@ class TransactionController extends Controller
     /**
      * Export transactions as an Excel file.
      *
-     * @param \Illuminate\Database\Eloquent\Collection $transactions the transactions to export
+     * @param  \Illuminate\Database\Eloquent\Collection $transactions the transactions to export
      * @return \Symfony\Component\HttpFoundation\StreamedResponse
      */
     private function exportAsExcel(\Illuminate\Database\Eloquent\Collection $transactions): \Symfony\Component\HttpFoundation\StreamedResponse
@@ -253,7 +253,7 @@ class TransactionController extends Controller
     /**
      * Export transactions as a CSV file.
      *
-     * @param \Illuminate\Database\Eloquent\Collection $transactions the transactions to export
+     * @param  \Illuminate\Database\Eloquent\Collection $transactions the transactions to export
      * @return \Symfony\Component\HttpFoundation\StreamedResponse
      */
     private function exportAsCsv(\Illuminate\Database\Eloquent\Collection $transactions): \Symfony\Component\HttpFoundation\StreamedResponse
