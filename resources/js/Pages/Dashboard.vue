@@ -6,7 +6,7 @@
       <div class="flex justify-between items-center mb-4">
         <h2 class="text-2xl font-bold text-black">Dashboard — {{ currentMonth }}</h2>
         <Link href="/transactions/create" class="bg-blue-600 text-white px-3 py-1.5 rounded">
-          + Add New
+          + Add New Transaction
         </Link>
       </div>
 

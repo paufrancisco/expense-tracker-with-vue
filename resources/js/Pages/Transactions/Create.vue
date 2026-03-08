@@ -11,7 +11,7 @@
             :class="form.type === 'income' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700'"
             class="py-3 rounded-lg font-semibold"
           >
-            ↑ Income
+          Income
           </button>
 
           <button
@@ -19,7 +19,7 @@
             :class="form.type === 'expense' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-700'"
             class="py-3 rounded-lg font-semibold"
           >
-            ↓ Expense
+          Expense
           </button>
         </div>
 
