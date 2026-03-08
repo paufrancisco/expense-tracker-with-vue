@@ -2,14 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Transaction extends Model
 {
     use HasFactory;
 
-    // These fields can be saved via form
+    /** @var array */
     protected $fillable = [
         'user_id',
         'type',
@@ -25,19 +25,16 @@ class Transaction extends Model
         'transaction_date' => 'date:Y-m-d',
     ];
 
-    // Relationship: each transaction belongs to one user
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    // Helper: scope to only income transactions
     public function scopeIncome($query)
     {
         return $query->where('type', 'income');
     }
 
-    // Helper: scope to only expense transactions
     public function scopeExpense($query)
     {
         return $query->where('type', 'expense');
