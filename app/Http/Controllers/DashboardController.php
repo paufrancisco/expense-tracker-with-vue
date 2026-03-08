@@ -58,7 +58,7 @@ class DashboardController extends Controller
 
         $recentTransactions = $user->transactions()
             ->orderBy('transaction_date', 'desc')
-            ->limit(5)
+            ->limit(10)
             ->get()
             ->map(fn ($transaction) => [
                 'id' => $transaction->id,

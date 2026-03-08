@@ -27,14 +27,15 @@
           bgColor="bg-red-50"
           valueColor="text-red-700"
           labelColor="text-red-600"
+        /> 
+        <SummaryCard
+          label="Revenue"
+          :value="balance"
+          subtitle="Income minus Expenses"
+          bgColor="bg-blue-50"
+          valueColor="text-blue-700"
+          labelColor="text-blue-600"
         />
-        <div class="bg-blue-50 rounded-xl shadow-sm p-6 flex flex-col items-center justify-center text-center">
-          <p class="text-sm font-medium text-blue-600">Revenue</p>
-          <p class="text-3xl font-bold mt-1 text-blue-700">
-            ₱{{ formatAmount(balance) }}
-          </p>
-          <p class="text-xs mt-2 text-blue-600">Income minus Expenses</p>
-        </div>
       </div>
 
       <!-- Recent Transactions: Income | Expense side by side -->
@@ -67,7 +68,7 @@
                 <td class="py-1.5">{{ transaction.title }}</td>
                 <td class="py-1.5">{{ transaction.category }}</td>
                 <td class="py-1.5 text-right text-green-600">
-                  +₱{{ transaction.amount }}
+                  +₱{{ formatAmount(transaction.amount) }}
                 </td>
               </tr>
             </tbody>
@@ -101,7 +102,7 @@
                 <td class="py-1.5">{{ transaction.title }}</td>
                 <td class="py-1.5">{{ transaction.category }}</td>
                 <td class="py-1.5 text-right text-red-600">
-                  -₱{{ transaction.amount }}
+                  -₱{{ formatAmount(transaction.amount) }}
                 </td>
               </tr>
             </tbody>

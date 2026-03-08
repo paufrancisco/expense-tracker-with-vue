@@ -7,14 +7,14 @@
         <!-- Type Selector -->
         <div class="grid grid-cols-2 gap-3 mb-6">
           <button
-            @click="form.type = 'income'"
+            @click="selectType('income')"
             :class="form.type === 'income' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700'"
             class="py-3 rounded-lg font-semibold"
           >
             ↑ Income
           </button>
           <button
-            @click="form.type = 'expense'"
+            @click="selectType('expense')"
             :class="form.type === 'expense' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-700'"
             class="py-3 rounded-lg font-semibold"
           >
@@ -134,15 +134,16 @@ const form = useForm({
   transaction_date: props.transaction.transaction_date?.split('T')[0] ?? ''
 })
 
-// Only show categories matching the selected type
 const filteredCategories = computed(() =>
   props.categories.filter(category => category.type === form.type)
 )
+
+const selectType = (type) => {
+  form.type = type
+  form.category = ''
+}
 
 const submit = () => {
   form.put(`/transactions/${props.transaction.id}`)
 }
 </script>
-
-<style scoped>
-</style>

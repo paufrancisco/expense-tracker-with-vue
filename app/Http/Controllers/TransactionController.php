@@ -121,10 +121,10 @@ class TransactionController extends Controller
     {
         $this->authorize('update', $transaction);
 
-        return Inertia::render('Transactions/Edit', array_merge(
-            ['transaction' => $transaction],
-            $this->getCategoriesGroupedByType($request)
-        ));
+        return Inertia::render('Transactions/Edit', [
+            'transaction' => $transaction,
+            'categories'  => $request->user()->categories()->orderBy('name')->get(),  
+        ]);
     }
 
     /**

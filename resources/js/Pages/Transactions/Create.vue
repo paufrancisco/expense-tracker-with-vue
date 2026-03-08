@@ -89,15 +89,24 @@
             ></textarea>
           </div>
         </div>
+ 
+        <!-- Action Buttons -->
+        <div class="flex gap-3 mt-6">
+          <Link
+            href="/transactions"
+            class="flex-1 text-center bg-gray-100 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-200"
+          >
+            Cancel
+          </Link>
+          <button
+            @click="submit"
+            :disabled="form.processing"
+            class="flex-1 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50"
+          >
+            {{ form.processing ? 'Saving...' : 'Save Transaction' }}
+          </button>
+        </div> 
 
-        <!-- Submit Button -->
-        <button
-          @click="submit"
-          :disabled="form.processing"
-          class="mt-6 w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50"
-        >
-          {{ form.processing ? 'Saving...' : 'Save Transaction' }}
-        </button>
       </div>
     </div>
   </AppLayout>
@@ -105,8 +114,8 @@
 
 <script setup>
 import { computed } from 'vue'
-import { useForm } from '@inertiajs/vue3'
-import AppLayout from '@/Layouts/AppLayout.vue'
+import { Link, useForm } from '@inertiajs/vue3'
+import AppLayout from '@/Layouts/AppLayout.vue' 
 
 const props = defineProps({
   income: {
