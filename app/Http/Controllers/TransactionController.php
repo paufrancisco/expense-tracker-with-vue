@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreTransactionRequest;
+use App\Http\Requests\UpdateTransactionRequest;
 use App\Models\Transaction;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -122,24 +123,15 @@ class TransactionController extends Controller
     /**
      * Update the specified transaction in the database.
      *
-     * @param  Request $request the incoming request
+     * @param  UpdateTransactionRequest $request the incoming request
      * @param  Transaction $transaction the transaction to update
      * @return RedirectResponse
      */
-    public function update(Request $request, Transaction $transaction): RedirectResponse
+    public function update(UpdateTransactionRequest $request, Transaction $transaction): RedirectResponse
     {
         $this->authorize('update', $transaction);
 
-        $validated = $request->validate([
-            'type'             => 'required|in:income,expense',
-            'title'            => 'required|string|max:255',
-            'amount'           => 'required|numeric|min:0.01',
-            'category'         => 'required|string',
-            'description'      => 'nullable|string',
-            'transaction_date' => 'required|date',
-        ]);
-
-        $transaction->update($validated);
+        $transaction->update($request->validated());
 
         return redirect()->route('transactions.index')
             ->with('success', 'Transaction updated successfully!');
