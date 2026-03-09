@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreTransactionRequest;
 use App\Models\Transaction;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -90,21 +91,12 @@ class TransactionController extends Controller
     /**
      * Store a newly created transaction in the database.
      *
-     * @param  Request $request the incoming request
+     * @param  StoreTransactionRequest $request the incoming HTTP request
      * @return RedirectResponse
      */
-    public function store(Request $request): RedirectResponse
+    public function store(StoreTransactionRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'type'             => 'required|in:income,expense',
-            'title'            => 'required|string|max:255',
-            'amount'           => 'required|numeric|min:0.01',
-            'category'         => 'required|string',
-            'description'      => 'nullable|string',
-            'transaction_date' => 'required|date',
-        ]);
-
-        $request->user()->transactions()->create($validated);
+        $request->user()->transactions()->create($request->validated());
 
         return redirect()->route('transactions.index')
             ->with('success', 'Transaction added successfully!');
