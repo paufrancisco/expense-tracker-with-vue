@@ -5,7 +5,7 @@
 
       <div class="flex justify-between items-center mb-4">
         <h2 class="text-2xl font-bold text-black">Dashboard — {{ currentMonth }}</h2>
-        <Link href="/transactions/create" class="bg-blue-600 text-white px-3 py-1.5 rounded">
+        <Link :href="route('transactions.create')" class="bg-blue-600 text-white px-3 py-1.5 rounded">
           + Add New Transaction
         </Link>
       </div>
@@ -27,7 +27,7 @@
           bgColor="bg-red-50"
           valueColor="text-red-700"
           labelColor="text-red-600"
-        /> 
+        />
         <SummaryCard
           label="Revenue"
           :value="balance"
@@ -45,7 +45,9 @@
         <div class="bg-white p-4 rounded-xl shadow-sm overflow-auto" style="max-height: 240px;">
           <div class="flex justify-between items-center mb-3">
             <h3 class="font-semibold text-green-700">Recent Income</h3>
-            <Link href="/transactions?type=income" class="text-green-600 text-sm">View All →</Link>
+            <Link :href="route('transactions.index', { type: 'income' })" class="text-green-600 text-sm">
+              View All →
+            </Link>
           </div>
           <table class="w-full text-sm">
             <thead>
@@ -79,7 +81,9 @@
         <div class="bg-white p-4 rounded-xl shadow-sm overflow-auto" style="max-height: 240px;">
           <div class="flex justify-between items-center mb-3">
             <h3 class="font-semibold text-red-700">Recent Expenses</h3>
-            <Link href="/transactions?type=expense" class="text-red-600 text-sm">View All →</Link>
+            <Link :href="route('transactions.index', { type: 'expense' })" class="text-red-600 text-sm">
+              View All →
+            </Link>
           </div>
           <table class="w-full text-sm">
             <thead>
@@ -111,10 +115,9 @@
 
       </div>
 
-      <!-- Charts Row: Two Pie Charts side by side -->
+      <!-- Charts Row: Income | Expense Pie Charts -->
       <div class="grid grid-cols-2 gap-4">
 
-        <!-- Left: Income Pie Chart -->
         <div class="bg-white p-4 rounded-xl shadow-sm">
           <h3 class="font-semibold text-green-700 mb-3">Income by Category</h3>
           <div style="height: 220px;" class="flex items-center justify-center">
@@ -127,7 +130,6 @@
           </div>
         </div>
 
-        <!-- Right: Expense Pie Chart -->
         <div class="bg-white p-4 rounded-xl shadow-sm">
           <h3 class="font-semibold text-red-700 mb-3">Expenses by Category</h3>
           <div style="height: 220px;" class="flex items-center justify-center">
@@ -147,8 +149,8 @@
 </template>
 
 <script setup>
-import { computed, onMounted } from 'vue'
-import { Link, Head, router } from '@inertiajs/vue3'
+import { computed } from 'vue'
+import { Link, Head } from '@inertiajs/vue3'
 import { Pie } from 'vue-chartjs'
 import { Chart, ArcElement, Tooltip, Legend } from 'chart.js'
 import ChartDataLabels from 'chartjs-plugin-datalabels'
@@ -157,6 +159,14 @@ import SummaryCard from '@/Components/SummaryCard.vue'
 
 Chart.register(ArcElement, Tooltip, Legend, ChartDataLabels)
 
+/**
+ * @param {Number} totalIncome        - total income amount for the current month
+ * @param {Number} totalExpense       - total expense amount for the current month
+ * @param {Number} balance            - net balance (income minus expenses) for the current month
+ * @param {Object} expenseByCategory  - expense totals keyed by category name
+ * @param {Object} incomeByCategory   - income totals keyed by category name
+ * @param {Array}  recentTransactions - list of the most recent transactions for display
+ */
 const props = defineProps({
   totalIncome: {
     type: Number,
@@ -184,20 +194,7 @@ const props = defineProps({
   }
 })
 
-onMounted(() => {
-  router.reload({
-    only: [
-      'totalIncome',
-      'totalExpense',
-      'balance',
-      'expenseByCategory',
-      'incomeByCategory',
-      'recentTransactions'
-    ]
-  })
-})
-
-const CHART_COLORS = ['#22C55E', '#3B82F6', '#EAB308', '#8B5CF6', '#EC4899', '#14B8A6', '#F97316']
+const CHART_COLORS  = ['#22C55E', '#3B82F6', '#EAB308', '#8B5CF6', '#EC4899', '#14B8A6', '#F97316']
 const EXPENSE_COLORS = ['#EF4444', '#F97316', '#EAB308', '#8B5CF6', '#EC4899', '#3B82F6', '#14B8A6']
 
 const PIE_OPTIONS = {
@@ -232,29 +229,17 @@ const recentExpense = computed(() =>
   props.recentTransactions.filter(t => t.type === 'expense')
 )
 
-const incomePieData = computed(() => ({
-  labels: Object.keys(props.incomeByCategory),
-  datasets: [{
-    data: Object.values(props.incomeByCategory),
-    backgroundColor: CHART_COLORS
-  }]
-}))
+const buildPieData = (categoryData, colors) => ({
+  labels: Object.keys(categoryData),
+  datasets: [{ data: Object.values(categoryData), backgroundColor: colors }]
+})
 
-const expensePieData = computed(() => ({
-  labels: Object.keys(props.expenseByCategory),
-  datasets: [{
-    data: Object.values(props.expenseByCategory),
-    backgroundColor: EXPENSE_COLORS
-  }]
-}))
+const incomePieData  = computed(() => buildPieData(props.incomeByCategory, CHART_COLORS))
+const expensePieData = computed(() => buildPieData(props.expenseByCategory, EXPENSE_COLORS))
 
-const incomeHasData = computed(() => Object.keys(props.incomeByCategory).length > 0)
+const incomeHasData  = computed(() => Object.keys(props.incomeByCategory).length > 0)
 const expenseHasData = computed(() => Object.keys(props.expenseByCategory).length > 0)
 
-const formatAmount = (amount) => {
-  return new Intl.NumberFormat('en-PH', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  }).format(amount)
-}
+const formatAmount = (amount) =>
+  new Intl.NumberFormat('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount)
 </script>
