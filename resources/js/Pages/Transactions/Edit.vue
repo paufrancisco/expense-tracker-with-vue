@@ -11,14 +11,14 @@
             :class="form.type === 'income' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700'"
             class="py-3 rounded-lg font-semibold"
           >
-          Income
+            Income
           </button>
           <button
             @click="selectType('expense')"
             :class="form.type === 'expense' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-700'"
             class="py-3 rounded-lg font-semibold"
           >
-          Expense
+            Expense
           </button>
         </div>
 
@@ -69,7 +69,7 @@
             <label class="block text-sm font-medium mb-1">Category *</label>
             <select v-model="form.category" class="w-full border rounded-lg px-3 py-2">
               <option value="">Select Category</option>
-              <option v-for="category in filteredCategories" :key="category.id" :value="category.name">
+              <option v-for="category in currentCategories" :key="category.id" :value="category.name">
                 {{ category.name }}
               </option>
             </select>
@@ -91,7 +91,7 @@
         <!-- Action Buttons -->
         <div class="flex gap-3 mt-6">
           <Link
-            href="/transactions"
+            :href="route('transactions.index')"
             class="flex-1 text-center bg-gray-100 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-200"
           >
             Cancel
@@ -114,28 +114,37 @@ import { computed } from 'vue'
 import { Link, useForm } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
 
+/**
+ * @param {Object} transaction - the existing transaction data to pre-populate the form
+ * @param {Array}  income      - list of income categories for the category dropdown
+ * @param {Array}  expense     - list of expense categories for the category dropdown
+ */
 const props = defineProps({
   transaction: {
     type: Object,
     default: () => ({})
   },
-  categories: {
+  income: {
+    type: Array,
+    default: () => []
+  },
+  expense: {
     type: Array,
     default: () => []
   }
 })
 
 const form = useForm({
-  type: props.transaction.type,
-  title: props.transaction.title,
-  amount: props.transaction.amount,
-  category: props.transaction.category,
-  description: props.transaction.description ?? '',
+  type:             props.transaction.type,
+  title:            props.transaction.title,
+  amount:           props.transaction.amount,
+  category:         props.transaction.category,
+  description:      props.transaction.description ?? '',
   transaction_date: props.transaction.transaction_date?.split('T')[0] ?? ''
 })
 
-const filteredCategories = computed(() =>
-  props.categories.filter(category => category.type === form.type)
+const currentCategories = computed(() =>
+  form.type === 'income' ? props.income : props.expense
 )
 
 const selectType = (type) => {
@@ -144,6 +153,6 @@ const selectType = (type) => {
 }
 
 const submit = () => {
-  form.put(`/transactions/${props.transaction.id}`)
+  form.put(route('transactions.update', props.transaction.id))
 }
 </script>

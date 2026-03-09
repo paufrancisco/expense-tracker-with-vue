@@ -5,77 +5,44 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreTransactionRequest;
 use App\Http\Requests\UpdateTransactionRequest;
 use App\Models\Transaction;
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Services\TransactionService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
-use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class TransactionController extends Controller
 {
     use AuthorizesRequests;
 
+    /** @var TransactionService */
+    private TransactionService $transactionService;
+
     /**
-     * Display a listing of transactions with optional filters.
+     * @param  TransactionService $transactionService the service handling transaction logic
+     */
+    public function __construct(TransactionService $transactionService)
+    {
+        $this->transactionService = $transactionService;
+    }
+
+    /**
+     * Display a paginated and filtered listing of transactions.
      *
      * @param  Request $request the incoming request
      * @return Response
      */
     public function index(Request $request): Response
     {
-        $query = $request->user()->transactions()
-            ->orderBy('transaction_date', 'desc');
+        $user = $request->user();
 
-        if ($request->input('type')) {
-            $query->where('type', $request->input('type'));
-        }
-
-        if ($request->input('category')) {
-            $query->where('category', $request->input('category'));
-        }
-
-        if ($request->input('date_from')) {
-            $query->whereDate('transaction_date', '>=', $request->input('date_from'));
-        }
-
-        if ($request->input('date_to')) {
-            $query->whereDate('transaction_date', '<=', $request->input('date_to'));
-        }
-
-        if ($request->input('search')) {
-            $query->where('title', 'like', '%' . $request->input('search') . '%');
-        }
-
-        $transactions = $query->paginate(9);
-
-        return Inertia::render('Transactions/Index', array_merge(
-            ['transactions' => $transactions],
-            ['filters' => $request->only(['type', 'category', 'date_from', 'date_to', 'search'])],
-            $this->getCategoriesGroupedByType($request)
-        ));
-    }
-
-    /**
-     * Retrieve the authenticated user's categories grouped by type.
-     *
-     * @param  Request $request the incoming request
-     * @return array
-     */
-    private function getCategoriesGroupedByType(Request $request): array
-    {
-        $grouped = $request->user()
-            ->categories()
-            ->orderBy('name')
-            ->get()
-            ->groupBy('type');
-
-        return [
-            'income'  => $grouped->get('income', collect()),
-            'expense' => $grouped->get('expense', collect()),
-        ];
+        return Inertia::render('Transactions/Index', [
+            'transactions' => $this->transactionService->getPaginatedTransactions($user, $request),
+            'filters'      => $this->transactionService->getActiveFilters($request),
+            ...$this->transactionService->getCategoriesGroupedByType($user),
+        ]);
     }
 
     /**
@@ -86,7 +53,9 @@ class TransactionController extends Controller
      */
     public function create(Request $request): Response
     {
-        return Inertia::render('Transactions/Create', $this->getCategoriesGroupedByType($request));
+        return Inertia::render('Transactions/Create',
+            $this->transactionService->getCategoriesGroupedByType($request->user())
+        );
     }
 
     /**
@@ -97,7 +66,9 @@ class TransactionController extends Controller
      */
     public function store(StoreTransactionRequest $request): RedirectResponse
     {
-        $request->user()->transactions()->create($request->validated());
+        DB::transaction(function () use ($request) {
+            $request->user()->transactions()->create($request->validated());
+        });
 
         return redirect()->route('transactions.index')
             ->with('success', 'Transaction added successfully!');
@@ -106,7 +77,7 @@ class TransactionController extends Controller
     /**
      * Show the form for editing an existing transaction.
      *
-     * @param  Request $request the incoming request
+     * @param  Request     $request     the incoming request
      * @param  Transaction $transaction the transaction to edit
      * @return Response
      */
@@ -116,22 +87,22 @@ class TransactionController extends Controller
 
         return Inertia::render('Transactions/Edit', [
             'transaction' => $transaction,
-            'categories'  => $request->user()->categories()->orderBy('name')->get(),
+            ...$this->transactionService->getCategoriesGroupedByType($request->user()),
         ]);
     }
 
     /**
      * Update the specified transaction in the database.
      *
-     * @param  UpdateTransactionRequest $request the incoming request
-     * @param  Transaction $transaction the transaction to update
+     * @param  UpdateTransactionRequest $request     the incoming HTTP request
+     * @param  Transaction              $transaction the transaction to update
      * @return RedirectResponse
      */
     public function update(UpdateTransactionRequest $request, Transaction $transaction): RedirectResponse
     {
-        $this->authorize('update', $transaction);
-
-        $transaction->update($request->validated());
+        DB::transaction(function () use ($request, $transaction) {
+            $transaction->update($request->validated());
+        });
 
         return redirect()->route('transactions.index')
             ->with('success', 'Transaction updated successfully!');
@@ -147,123 +118,29 @@ class TransactionController extends Controller
     {
         $this->authorize('delete', $transaction);
 
-        $transaction->delete();
+        DB::transaction(function () use ($transaction) {
+            $transaction->delete();
+        });
 
         return redirect()->route('transactions.index')
             ->with('success', 'Transaction deleted successfully!');
     }
 
     /**
-     * Export transactions in the specified format.
+     * Export all transactions in the requested format.
      *
      * @param  Request $request the incoming request
      * @return mixed
      */
     public function export(Request $request): mixed
     {
-        $format = $request->input('format', 'csv');
+        $format       = $request->input('format', 'csv');
+        $transactions = $this->transactionService->getAllTransactions($request->user());
 
-        $transactions = $request->user()->transactions()
-            ->orderBy('transaction_date', 'desc')
-            ->get();
-
-        if ($format === 'pdf') {
-            return $this->exportAsPdf($transactions);
-        }
-
-        if ($format === 'excel') {
-            return $this->exportAsExcel($transactions);
-        }
-
-        return $this->exportAsCsv($transactions);
-    }
-
-    /**
-     * Export transactions as a PDF file.
-     *
-     * @param  \Illuminate\Database\Eloquent\Collection $transactions the transactions to export
-     * @return mixed
-     */
-    private function exportAsPdf(\Illuminate\Database\Eloquent\Collection $transactions): mixed
-    {
-        $pdf = Pdf::loadView('exports.transactions-pdf', [
-            'transactions' => $transactions,
-        ]);
-
-        return $pdf->download('transactions.pdf');
-    }
-
-    /**
-     * Export transactions as an Excel file.
-     *
-     * @param  \Illuminate\Database\Eloquent\Collection $transactions the transactions to export
-     * @return \Symfony\Component\HttpFoundation\StreamedResponse
-     */
-    private function exportAsExcel(\Illuminate\Database\Eloquent\Collection $transactions): \Symfony\Component\HttpFoundation\StreamedResponse
-    {
-        $spreadsheet = new Spreadsheet();
-        $sheet = $spreadsheet->getActiveSheet();
-
-        $sheet->fromArray(
-            ['Date', 'Type', 'Title', 'Category', 'Amount', 'Description'],
-            null,
-            'A1'
-        );
-
-        $row = 2;
-
-        foreach ($transactions as $transaction) {
-            $sheet->fromArray([
-                $transaction->transaction_date->format('Y-m-d'),
-                $transaction->type,
-                $transaction->title,
-                $transaction->category,
-                $transaction->amount,
-                $transaction->description,
-            ], null, 'A' . $row);
-
-            $row++;
-        }
-
-        $writer = new Xlsx($spreadsheet);
-
-        return response()->streamDownload(function () use ($writer) {
-            $writer->save('php://output');
-        }, 'transactions.xlsx', [
-            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        ]);
-    }
-
-    /**
-     * Export transactions as a CSV file.
-     *
-     * @param  \Illuminate\Database\Eloquent\Collection $transactions the transactions to export
-     * @return \Symfony\Component\HttpFoundation\StreamedResponse
-     */
-    private function exportAsCsv(\Illuminate\Database\Eloquent\Collection $transactions): \Symfony\Component\HttpFoundation\StreamedResponse
-    {
-        $headers = [
-            'Content-Type'        => 'text/csv',
-            'Content-Disposition' => 'attachment; filename=transactions.csv',
-        ];
-
-        return response()->stream(function () use ($transactions) {
-            $handle = fopen('php://output', 'w');
-
-            fputcsv($handle, ['Date', 'Type', 'Title', 'Category', 'Amount', 'Description']);
-
-            foreach ($transactions as $transaction) {
-                fputcsv($handle, [
-                    $transaction->transaction_date->format('Y-m-d'),
-                    $transaction->type,
-                    $transaction->title,
-                    $transaction->category,
-                    $transaction->amount,
-                    $transaction->description,
-                ]);
-            }
-
-            fclose($handle);
-        }, 200, $headers);
+        return match ($format) {
+            'pdf'   => $this->transactionService->exportAsPdf($transactions),
+            'excel' => $this->transactionService->exportAsExcel($transactions),
+            default => $this->transactionService->exportAsCsv($transactions),
+        };
     }
 }
