@@ -1,5 +1,7 @@
 <?php
 
+namespace Routes;
+
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\ProfileController;
@@ -39,7 +41,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return redirect()->route('dashboard');
     });
 
-    
 });
 
 require __DIR__ . '/auth.php';

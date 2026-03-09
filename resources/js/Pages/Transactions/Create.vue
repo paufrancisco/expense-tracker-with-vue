@@ -11,7 +11,7 @@
             :class="form.type === 'income' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700'"
             class="py-3 rounded-lg font-semibold"
           >
-          Income
+            Income
           </button>
 
           <button
@@ -19,7 +19,7 @@
             :class="form.type === 'expense' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-700'"
             class="py-3 rounded-lg font-semibold"
           >
-          Expense
+            Expense
           </button>
         </div>
 
@@ -89,11 +89,11 @@
             ></textarea>
           </div>
         </div>
- 
+
         <!-- Action Buttons -->
         <div class="flex gap-3 mt-6">
           <Link
-            href="/transactions"
+            :href="route('transactions.index')"
             class="flex-1 text-center bg-gray-100 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-200"
           >
             Cancel
@@ -105,7 +105,7 @@
           >
             {{ form.processing ? 'Saving...' : 'Save Transaction' }}
           </button>
-        </div> 
+        </div>
 
       </div>
     </div>
@@ -115,8 +115,12 @@
 <script setup>
 import { computed } from 'vue'
 import { Link, useForm } from '@inertiajs/vue3'
-import AppLayout from '@/Layouts/AppLayout.vue' 
+import AppLayout from '@/Layouts/AppLayout.vue'
 
+/**
+ * @param {Array} income - list of income categories available for selection
+ * @param {Array} expense - list of expense categories available for selection
+ */
 const props = defineProps({
   income: {
     type: Array,
@@ -147,6 +151,6 @@ const selectType = (type) => {
 }
 
 const submit = () => {
-  form.post('/transactions')
+  form.post(route('transactions.store'))
 }
 </script>
