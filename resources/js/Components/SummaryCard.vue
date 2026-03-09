@@ -9,6 +9,14 @@
 </template>
 
 <script setup>
+/**
+ * @param {String} label      - the card's heading label text
+ * @param {Number} value      - the monetary value to display
+ * @param {String} subtitle   - the descriptive text shown below the value
+ * @param {String} bgColor    - Tailwind background color class for the card
+ * @param {String} labelColor - Tailwind text color class for the label and subtitle
+ * @param {String} valueColor - Tailwind text color class for the value
+ */
 const props = defineProps({
   label: {
     type: String,
@@ -36,13 +44,9 @@ const props = defineProps({
   }
 })
 
-const formatAmount = (amount) => {
-  return new Intl.NumberFormat('en-PH', {
+const formatAmount = (amount) =>
+  new Intl.NumberFormat('en-PH', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
   }).format(amount)
-}
 </script>
-
-<style scoped>
-</style>

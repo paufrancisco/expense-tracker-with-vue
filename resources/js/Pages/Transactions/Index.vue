@@ -232,9 +232,9 @@ import AppLayout from '@/Layouts/AppLayout.vue'
 
 /**
  * @param {Object} transactions - paginated transaction data from the server
- * @param {Object} filters - active filter values to pre-populate the filter bar
- * @param {Array}  income - list of income categories for the category filter
- * @param {Array}  expense - list of expense categories for the category filter
+ * @param {Object} filters      - active filter values to pre-populate the filter bar
+ * @param {Array}  income       - list of income categories for the category filter
+ * @param {Array}  expense      - list of expense categories for the category filter
  */
 const props = defineProps({
   transactions: {
@@ -255,6 +255,8 @@ const props = defineProps({
   }
 })
 
+const NAVIGATE_OPTIONS = { preserveState: true, preserveScroll: true }
+
 const exportDropdown = ref(false)
 
 const filterForm = reactive({
@@ -265,24 +267,25 @@ const filterForm = reactive({
   date_to:   props.filters.date_to   || ''
 })
 
+/** Navigate to the transactions index with the given query parameters */
+const navigate = (params = {}) => {
+  router.get(route('transactions.index'), params, NAVIGATE_OPTIONS)
+}
+
 const closeExportDropdown = (e) => {
   if (!e.target.closest('.relative')) {
     exportDropdown.value = false
   }
 }
 
-const applyFilters = () => {
-  router.get(route('transactions.index'), filterForm, { preserveState: true, preserveScroll: true })
-}
+const applyFilters = () => navigate(filterForm)
 
 const onTypeChange = () => {
   filterForm.category = ''
   applyFilters()
 }
 
-const goToPage = (page) => {
-  router.get(route('transactions.index'), { ...filterForm, page }, { preserveState: true, preserveScroll: true })
-}
+const goToPage = (page) => navigate({ ...filterForm, page })
 
 const deleteTransaction = (id) => {
   if (confirm('Are you sure you want to delete this transaction?')) {
@@ -296,7 +299,7 @@ const resetFilters = () => {
   filterForm.category  = ''
   filterForm.date_from = ''
   filterForm.date_to   = ''
-  router.get(route('transactions.index'), {}, { preserveState: true, preserveScroll: true })
+  navigate()
 }
 
 onMounted(() => document.addEventListener('click', closeExportDropdown))
