@@ -44,7 +44,10 @@
           </div>
         </div>
 
-        <Link href="/transactions/create" class="bg-blue-600 text-white px-4 py-2 rounded text-sm">
+        <Link
+          :href="route('transactions.create')"
+          class="bg-blue-600 text-white px-4 py-2 rounded text-sm"
+        >
           + Add New Transaction
         </Link>
       </div>
@@ -60,7 +63,6 @@
         @input="applyFilters"
       />
 
-      <!-- Type -->
       <select
         v-model="filterForm.type"
         class="border rounded px-3 py-2 text-sm"
@@ -174,7 +176,7 @@
 
             <td class="px-4 py-3 text-center">
               <Link
-                :href="`/transactions/${transaction.id}/edit`"
+                :href="route('transactions.edit', transaction.id)"
                 class="text-blue-600 hover:underline text-sm mr-3"
               >
                 Edit
@@ -190,6 +192,35 @@
           </tr>
         </tbody>
       </table>
+ 
+      <!-- Pagination -->
+      <div class="flex justify-between items-center px-4 py-3 border-t text-sm text-gray-600">
+        <span>
+          Showing {{ transactions.from ?? 0 }}–{{ transactions.to ?? 0 }} of {{ transactions.total }}
+        </span>
+
+        <div class="flex gap-2">
+          <button
+            v-if="transactions.current_page > 1"
+            @click="goToPage(transactions.current_page - 1)"
+            class="px-3 py-1 rounded border bg-white text-gray-600 hover:bg-gray-50"
+          >
+            Previous
+          </button>
+
+          <span class="px-3 py-1 text-gray-500">
+            Page {{ transactions.current_page }} of {{ transactions.last_page }}
+          </span>
+
+          <button
+            v-if="transactions.current_page < transactions.last_page"
+            @click="goToPage(transactions.current_page + 1)"
+            class="px-3 py-1 rounded border bg-white text-gray-600 hover:bg-gray-50"
+          >
+            Next
+          </button>
+        </div>
+      </div>
     </div>
   </AppLayout>
 </template>
@@ -199,6 +230,12 @@ import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import { Link, router } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
 
+/**
+ * @param {Object} transactions - paginated transaction data from the server
+ * @param {Object} filters - active filter values to pre-populate the filter bar
+ * @param {Array}  income - list of income categories for the category filter
+ * @param {Array}  expense - list of expense categories for the category filter
+ */
 const props = defineProps({
   transactions: {
     type: Object,
@@ -221,11 +258,11 @@ const props = defineProps({
 const exportDropdown = ref(false)
 
 const filterForm = reactive({
-  search: props.filters.search || '',
-  type: props.filters.type || '',
-  category: props.filters.category || '',
+  search:    props.filters.search    || '',
+  type:      props.filters.type      || '',
+  category:  props.filters.category  || '',
   date_from: props.filters.date_from || '',
-  date_to: props.filters.date_to || ''
+  date_to:   props.filters.date_to   || ''
 })
 
 const closeExportDropdown = (e) => {
@@ -235,7 +272,7 @@ const closeExportDropdown = (e) => {
 }
 
 const applyFilters = () => {
-  router.get('/transactions', filterForm, { preserveState: true, preserveScroll: true })
+  router.get(route('transactions.index'), filterForm, { preserveState: true, preserveScroll: true })
 }
 
 const onTypeChange = () => {
@@ -243,19 +280,23 @@ const onTypeChange = () => {
   applyFilters()
 }
 
+const goToPage = (page) => {
+  router.get(route('transactions.index'), { ...filterForm, page }, { preserveState: true, preserveScroll: true })
+}
+
 const deleteTransaction = (id) => {
   if (confirm('Are you sure you want to delete this transaction?')) {
-    router.delete(`/transactions/${id}`)
+    router.delete(route('transactions.destroy', id))
   }
 }
 
 const resetFilters = () => {
-  filterForm.search = ''
-  filterForm.type = ''
-  filterForm.category = ''
+  filterForm.search    = ''
+  filterForm.type      = ''
+  filterForm.category  = ''
   filterForm.date_from = ''
-  filterForm.date_to = ''
-  router.get('/transactions', {}, { preserveState: true, preserveScroll: true })
+  filterForm.date_to   = ''
+  router.get(route('transactions.index'), {}, { preserveState: true, preserveScroll: true })
 }
 
 onMounted(() => document.addEventListener('click', closeExportDropdown))
