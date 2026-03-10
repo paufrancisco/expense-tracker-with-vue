@@ -80,6 +80,16 @@ import PrimaryButton from '@/Components/PrimaryButton.vue'
 import TextInput from '@/Components/TextInput.vue'
 import { Head, Link, useForm } from '@inertiajs/vue3'
 
+/**
+ * Props received from AuthenticatedSessionController@create via Inertia::render()
+ *
+ * @prop {Boolean} canResetPassword - Whether the password reset feature is enabled.
+ *                                    
+ *
+ * @prop {String}  status           - Optional status message shown after an action,
+ *                                    such as after a password reset email is sent.
+ *                                    
+ */
 defineProps({
   canResetPassword: {
     type: Boolean
