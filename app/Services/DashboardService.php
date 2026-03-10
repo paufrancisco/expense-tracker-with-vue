@@ -9,12 +9,10 @@ use Illuminate\Support\Collection as SupportCollection;
 
 class DashboardService
 {
-    /** @var int Number of recent months to include in the monthly chart */
-    private const MONTHLY_RANGE = 6;
-
+    
     /** @var int Number of recent transactions to show on the dashboard */
     private const RECENT_LIMIT = 10;
-
+    
     /**
      * Build the complete dashboard payload for the given user.
      *
@@ -32,8 +30,7 @@ class DashboardService
             'balance'            => $this->sumByType($currentMonthTransactions, 'income')
                                     - $this->sumByType($currentMonthTransactions, 'expense'),
             'expenseByCategory'  => $this->groupByCategory($currentMonthTransactions, 'expense'),
-            'incomeByCategory'   => $this->groupByCategory($currentMonthTransactions, 'income'),
-            'monthlyData'        => $this->getMonthlyData($user, $now),
+            'incomeByCategory'   => $this->groupByCategory($currentMonthTransactions, 'income'), 
             'recentTransactions' => $this->getRecentTransactions($user),
         ];
     }
@@ -78,40 +75,6 @@ class DashboardService
             ->where('type', $type)
             ->groupBy('category')
             ->map(fn (Collection $items) => (float) $items->sum('amount'));
-    }
-
-    /**
-     * Build income and expense totals grouped by month for the past N months.
-     *
-     * @param  User   $user the authenticated user
-     * @param  Carbon $now  the current datetime reference
-     * @return array
-     */
-    private function getMonthlyData(User $user, Carbon $now): array
-    {
-        $startDate = $now->copy()->subMonths(self::MONTHLY_RANGE - 1)->startOfMonth();
-
-        $transactions = $user->transactions()
-            ->whereDate('transaction_date', '>=', $startDate)
-            ->get();
-
-        return collect(range(self::MONTHLY_RANGE - 1, 0))
-            ->map(function (int $monthsAgo) use ($now, $transactions) {
-                $date = $now->copy()->subMonths($monthsAgo);
-
-                $monthTransactions = $transactions->filter(
-                    fn ($t) => $t->transaction_date->month === $date->month
-                           && $t->transaction_date->year  === $date->year
-                );
-
-                return [
-                    'month'   => $date->format('M Y'),
-                    'income'  => (float) $monthTransactions->where('type', 'income')->sum('amount'),
-                    'expense' => (float) $monthTransactions->where('type', 'expense')->sum('amount'),
-                ];
-            })
-            ->values()
-            ->toArray();
     }
 
     /**

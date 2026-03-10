@@ -20,7 +20,7 @@ class DashboardController extends Controller
     {
         $this->dashboardService = $dashboardService;
     }
-
+    
     /**
      * Display the dashboard with financial summary and charts.
      *
