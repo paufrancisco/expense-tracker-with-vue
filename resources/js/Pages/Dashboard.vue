@@ -160,12 +160,21 @@ import SummaryCard from '@/Components/SummaryCard.vue'
 Chart.register(ArcElement, Tooltip, Legend, ChartDataLabels)
 
 /**
- * @param {Number} totalIncome        - total income amount for the current month
- * @param {Number} totalExpense       - total expense amount for the current month
- * @param {Number} balance            - net balance (income minus expenses) for the current month
- * @param {Object} expenseByCategory  - expense totals keyed by category name
- * @param {Object} incomeByCategory   - income totals keyed by category name
- * @param {Array}  recentTransactions - list of the most recent transactions for display
+ * Props received from DashboardController@index via Inertia::render()
+ * All values are computed by DashboardService::getDashboardData()
+ * and are scoped to the current month only.
+ *
+ * @prop {Number} totalIncome        - total sum of all income transactions for the current month
+ * @prop {Number} totalExpense       - total sum of all expense transactions for the current month
+ * @prop {Number} balance            - net balance: totalIncome - totalExpense
+ * @prop {Object} incomeByCategory   - income amounts grouped by category name
+ *                                     used to build the Income Pie Chart
+ *                                     Example: { Salary: 25000, Freelance: 5000 }
+ * @prop {Object} expenseByCategory  - expense amounts grouped by category name
+ *                                     used to build the Expense Pie Chart
+ *                                     Example: { Food: 3000, Rent: 12000 }
+ * @prop {Array}  recentTransactions - the 10 most recent transactions ordered by date descending
+ *                                     Shape: [{ id, title, category, type, amount, transaction_date }]
  */
 const props = defineProps({
   totalIncome: {
@@ -194,7 +203,7 @@ const props = defineProps({
   }
 })
 
-const CHART_COLORS  = ['#22C55E', '#3B82F6', '#EAB308', '#8B5CF6', '#EC4899', '#14B8A6', '#F97316']
+const CHART_COLORS = ['#22C55E', '#3B82F6', '#EAB308', '#8B5CF6', '#EC4899', '#14B8A6', '#F97316']
 const EXPENSE_COLORS = ['#EF4444', '#F97316', '#EAB308', '#8B5CF6', '#EC4899', '#3B82F6', '#14B8A6']
 
 const PIE_OPTIONS = {
@@ -234,10 +243,10 @@ const buildPieData = (categoryData, colors) => ({
   datasets: [{ data: Object.values(categoryData), backgroundColor: colors }]
 })
 
-const incomePieData  = computed(() => buildPieData(props.incomeByCategory, CHART_COLORS))
+const incomePieData = computed(() => buildPieData(props.incomeByCategory, CHART_COLORS))
 const expensePieData = computed(() => buildPieData(props.expenseByCategory, EXPENSE_COLORS))
 
-const incomeHasData  = computed(() => Object.keys(props.incomeByCategory).length > 0)
+const incomeHasData = computed(() => Object.keys(props.incomeByCategory).length > 0)
 const expenseHasData = computed(() => Object.keys(props.expenseByCategory).length > 0)
 
 const formatAmount = (amount) =>
