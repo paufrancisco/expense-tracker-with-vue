@@ -30,7 +30,7 @@
                     <td class="{{ $transaction->type }}">{{ ucfirst($transaction->type) }}</td>
                     <td>{{ $transaction->title }}</td>
                     <td>{{ $transaction->category }}</td>
-                    <td class="{{ $transaction->type }}">₱{{ number_format($transaction->amount, 2) }}</td>
+                    <td class="{{ $transaction->type }}">Php {{ number_format($transaction->amount, 2) }}</td>
                     <td>{{ $transaction->description }}</td>
                 </tr>
             @endforeach
