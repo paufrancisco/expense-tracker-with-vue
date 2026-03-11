@@ -1,6 +1,5 @@
 <template>
   <div class="min-h-screen bg-[#BFC9D1]">
-    <!-- Top Navigation Bar -->
     <nav class="bg-[#25343F] shadow-sm border-b border-gray-700">
       <div class="max-w-7xl mx-auto px-4 flex items-center justify-between h-12">
         <Link :href="route('dashboard')">
@@ -26,7 +25,6 @@
             Transactions
           </Link>
 
-          <!-- User Dropdown -->
           <div class="relative">
             <button
               @click="dropdownOpen = !dropdownOpen"
@@ -60,12 +58,10 @@
       </div>
     </nav>
 
-    <!-- Flash Messages -->
     <div v-if="$page.props.flash?.success" class="bg-green-50 border-l-4 border-green-500 p-4 m-4">
       {{ $page.props.flash.success }}
     </div>
 
-    <!-- Page Content -->
     <main class="max-w-7xl mx-auto px-4 py-8">
       <slot />
     </main>
@@ -77,15 +73,11 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { Link, usePage } from '@inertiajs/vue3'
 import logo from '../../../resources/images/logo.png'
 
-const page         = usePage()
+const page = usePage()
 const dropdownOpen = ref(false)
 
 const authUser = computed(() => page.props.auth.user)
 
-/**
- * Determine if the given route name matches or is a sub-route of the current page.
- * Uses Ziggy's route().current() to avoid comparing paths against full URLs.
- */
 const isActive = (routeName) => route().current(routeName) || route().current(routeName + '.*')
 
 const closeDropdown = (e) => {
