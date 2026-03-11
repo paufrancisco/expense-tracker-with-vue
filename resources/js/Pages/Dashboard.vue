@@ -16,7 +16,7 @@
           label="Total Income"
           :value="totalIncome"
           subtitle="This month"
-          bgColor="bg-green-50"
+          bgColor="bg-green-100"
           valueColor="text-green-700"
           labelColor="text-green-600"
         />
@@ -24,7 +24,7 @@
           label="Total Expenses"
           :value="totalExpense"
           subtitle="This month"
-          bgColor="bg-red-50"
+          bgColor="bg-red-100"
           valueColor="text-red-700"
           labelColor="text-red-600"
         />
@@ -32,7 +32,7 @@
           label="Revenue"
           :value="balance"
           subtitle="Income minus Expenses"
-          bgColor="bg-blue-50"
+          bgColor="bg-blue-100"
           valueColor="text-blue-700"
           labelColor="text-blue-600"
         />
