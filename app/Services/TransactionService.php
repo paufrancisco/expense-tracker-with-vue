@@ -184,4 +184,55 @@ class TransactionService
             $transaction->description,
         ];
     }
+
+    
+    /**
+     * Fetch filtered transactions for export (no pagination).
+     *
+     * @param  User    $user    the authenticated user
+     * @param  Request $request the incoming request containing filter parameters
+     * @return Collection
+     */
+    public function getFilteredTransactions(User $user, Request $request): Collection
+    {
+        $query = $user->transactions()->orderBy('transaction_date', 'desc');
+
+        if ($request->filled('type')) {
+            $query->where('type', $request->input('type'));
+        }
+
+        if ($request->filled('category')) {
+            $query->where('category', $request->input('category'));
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('transaction_date', '>=', $request->input('date_from'));
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('transaction_date', '<=', $request->input('date_to'));
+        }
+
+        if ($request->filled('search')) {
+            $query->where('title', 'like', '%' . $request->input('search') . '%');
+        }
+
+        return $query->get();
+    } 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }

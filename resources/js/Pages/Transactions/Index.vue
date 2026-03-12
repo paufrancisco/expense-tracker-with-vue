@@ -19,7 +19,7 @@
             class="absolute right-0 mt-2 w-40 bg-white rounded-xl shadow-lg border z-50"
           >
             <a
-              :href="route('transactions.export', { format: 'csv' })"
+              :href="route('transactions.export', { format: 'csv', ...filterForm })"
               class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
               @click="exportDropdown = false"
             >
@@ -27,7 +27,7 @@
             </a>
 
             <a
-              :href="route('transactions.export', { format: 'excel' })"
+              :href="route('transactions.export', { format: 'excel', ...filterForm })"
               class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
               @click="exportDropdown = false"
             >
@@ -35,7 +35,7 @@
             </a>
 
             <a
-              :href="route('transactions.export', { format: 'pdf' })"
+              :href="route('transactions.export', { format: 'pdf', ...filterForm })"
               class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
               @click="exportDropdown = false"
             >

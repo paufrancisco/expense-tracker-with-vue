@@ -127,7 +127,7 @@ class TransactionController extends Controller
     }
 
     /**
-     * Export all transactions in the requested format.
+     * Export filtered transactions in the requested format.
      *
      * @param  Request $request the incoming request
      * @return mixed
@@ -135,7 +135,7 @@ class TransactionController extends Controller
     public function export(Request $request): mixed
     {
         $format       = $request->input('format', 'csv');
-        $transactions = $this->transactionService->getAllTransactions($request->user());
+        $transactions = $this->transactionService->getFilteredTransactions($request->user(), $request);
 
         return match ($format) {
             'pdf'   => $this->transactionService->exportAsPdf($transactions),
