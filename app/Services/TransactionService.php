@@ -185,7 +185,7 @@ class TransactionService
         ];
     }
 
-    
+
     /**
      * Fetch filtered transactions for export (no pagination).
      *
@@ -218,21 +218,5 @@ class TransactionService
         }
 
         return $query->get();
-    } 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    }  
 }
